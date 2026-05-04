@@ -33,7 +33,9 @@ int main(int argc, char *argv[]) {
         Point nov = create_point(crd, razm); // Создаем структуру новой точки
         drv = kd_insert(drv, nov, 0);  // Вставляем её в построенное дерево
         printf("Point added\n"); // Уведомляем пользователя
-        free(crd);                     
+        free(crd);      
+        //Загружено N точек размерности D
+        //Точка добавлена
     }
     else if (strcmp(argv[2], "-kd_nearest") == 0) { // Проверка команды
         if (argc < 4) { 
@@ -54,6 +56,9 @@ int main(int argc, char *argv[]) {
         }
         free_point(&cel); 
         free(t_crd);   
+        //Загружено N точек размерности D
+        //Ближайшая точка: x y ...
+        //Расстояние: d.dd
     }
     else if (strcmp(argv[2], "-cmeans") == 0) { // Проверка команды
         if (argc < 4) {
@@ -64,7 +69,10 @@ int main(int argc, char *argv[]) {
         FCM *fc = fcm_create(pts, n_t, k_t, 2.0); // Создаем структуру FCM с параметром нечеткости 2.0
         fcm_run(fc, pts, 100, 0.001);  // Запускам алгоритм (макс 100 шагов, точность 0.001)
         fcm_print(fc, pts); 
-        fcm_free(fc);                      
+        fcm_free(fc); 
+        //Загружено N точек размерности D
+        //Сошлись на итерации ...(если сошёлся)
+        //РЕЗУЛЬТАТЫ FCM ...   (центры, матрица)                      
     }
     else if (strcmp(argv[2], "-dbscan") == 0) { // Проверка команды
         if (argc < 4) { 
@@ -75,7 +83,9 @@ int main(int argc, char *argv[]) {
         tok = strtok(NULL, ","); int min_t = tok ? atoi(tok) : 3; // Парсим minPts 
         DBSCAN *db = dbscan_run(pts, n_t, eps, min_t); // Запускам алгоритм кластеризации
         dbscan_print(db, pts);
-        dbscan_free(db);                   
+        dbscan_free(db);    
+        //Загружено N точек размерности D
+        //РЕЗУЛЬТАТЫ DBSCAN ...(кластеры, шум, принадлежности)
     }
     else { 
         fprintf(stderr, "Unknown command: %s\n", argv[2]);// Если команда не распознана
