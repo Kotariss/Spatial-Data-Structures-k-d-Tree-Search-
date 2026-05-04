@@ -10,28 +10,32 @@ FCM* fcm_create(Point *pts, int n_t, int n_k, double fuz) {
     FCM *fc = (FCM*)malloc(sizeof(FCM));      
     fc->n_points = n_t; 
     fc->n_clusters = n_k; 
-    fc->fuzziness = fuz;
+    fc->fuzziness = fuz; //нечеткость
 
     fc->centroids = (Point*)malloc(n_k * sizeof(Point));// Массив центров
-    for (int i = 0; i < n_k; i++) { // для каждого кластера
+    for (int i = 0; i < n_k; i++) { // i это класстеры
         // память под координаты центра
-        fc->centroids[i].coords = (double*)malloc(pts[0].razmer * sizeof(double));
-        fc->centroids[i].razmer = pts[0].razmer; // размерность
+        fc->centroids[i].coords = (double*)malloc(pts[0].razmer * sizeof(double));// память под координаты центра
+        fc->centroids[i].razmer = pts[0].razmer; // Запоминаем, сколько координат у этого центра, чтобы потом правильно обращаться к массиву и освобождать память.
+
     }
 
     // Выделяем память под матрицу принадлежности [точки × кластеры]
     fc->membership = (double**)malloc(n_t * sizeof(double*));
     for (int i = 0; i < n_t; i++) { // Для каждой точки
-        fc->membership[i] = (double*)malloc(n_k * sizeof(double)); // строка матрицы
+        fc->membership[i] = (double*)malloc(n_k * sizeof(double)); // Выделяем память под одну строку
         
         double row_sum = 0.0; // Сумма для нормировки
         for (int j = 0; j < n_k; j++) { // Для каждого кластера
             // Случайное число [0.5, 1.5] чтобы избежать нулей
             fc->membership[i][j] = 0.5 + (double)rand() / RAND_MAX;
-            row_sum += fc->membership[i][j];// Накопление суммы
+            row_sum += fc->membership[i][j];// Складываем все сгенерированные значения, чтобы потом нормировать строку.
         }
         for (int j = 0; j < n_k; j++) {// Нормировка строки
             fc->membership[i][j] /= row_sum; // делим на сумму 
+            //До: [0.8, 1.2, 0.6], row_sum = 2.6
+            //после: [0.8/2.6, 1.2/2.6, 0.6/2.6] = [0.31, 0.46, 0.23]
+            //Проверка: 0.31 + 0.46 + 0.23 = 1.0 
         }
     }
     return fc;
@@ -79,15 +83,14 @@ void fcm_update_membership(FCM *fc, Point *pts) {
     }
 }
 
-// Обновление центров кластеров 
+// Обновление центров кластеров (центроиды кластеров)
 void fcm_update_centers(FCM *fc, Point *pts) { 
     double m = fc->fuzziness;//нечеткость
     int razm = pts[0].razmer; //размерность пространства
 
     for (int j = 0; j < fc->n_clusters; j++) {  
         //по формуле
-        // числитель
-        double *chisl = (double*)calloc(razm, sizeof(double));
+        double *chisl = (double*)calloc(razm, sizeof(double)); // числитель
         double znam = 0.0; //знаменатель
 
         for (int i = 0; i < fc->n_points; i++) { 
@@ -115,13 +118,12 @@ void fcm_run(FCM *fc, Point *pts, int max_it, double epsil) {
 
     fcm_update_centers(fc, pts);// вычисляем центры из случайной матрицы U
 
-    double pred_osh = 1e9;// ошибка
+    double pred_osh = 1e9;
 
     for (int iter = 0; iter < max_it; iter++) {
 
-        Point *star = (Point*)malloc(fc->n_clusters * sizeof(Point)); //для сохранения старых центров
+        Point *star = (Point*)malloc(fc->n_clusters * sizeof(Point)); //для сохранения старых центров(для проверки сходимости)
         for (int j = 0; j < fc->n_clusters; j++) {
-            // Глубокое копирование точки
             star[j] = create_point(fc->centroids[j].coords, pts[0].razmer);
         }
 
