@@ -5,7 +5,8 @@
 #include <math.h>        
 
 // Поиск соседей в радиусе eps
-int* find_neighbors(Point *pts, int n_t, Point p, double eps, int *n_sos) {
+int* find_neighbors(Point *pts, int n_t, Point p, double eps, int *n_sos) {//n_t - колво точек
+
     int *sos = (int*)malloc(n_t * sizeof(int)); //массив максимальной длины 
     *n_sos = 0; //сначало соседей 0
 
@@ -39,7 +40,7 @@ void expand_cluster(Point *pts, int *met, int n_t, int idx, int id_kl, double ep
     }
     while (n_sem > 0) { // Пока очередь точек для проверки не пуста
 
-        int tek = sem[--n_sem]; // Берем последнюю точку из очереди
+        int tek = sem[--n_sem]; // Берем последнюю точку из очереди(потому что используем стек (LIFO), но для дбскана не важно, просто нам так легче)*
         int n_tek_sos; int *tek_sos = find_neighbors(pts, n_t, pts[tek], eps, &n_tek_sos); // Ищем соседей этой точки
 
         if (n_tek_sos >= min_t) { // Если это тоже "ядерная" точка (ну или центральная)
@@ -50,6 +51,7 @@ void expand_cluster(Point *pts, int *met, int n_t, int idx, int id_kl, double ep
                         
                         sem = (int*)realloc(sem, (n_sem + 1) * sizeof(int)); // Увеличиваем память очереди
                         sem[n_sem++] = nb; // Добавляем индекс соседа в очередь для дальнейшего расширения
+                        //тем не менее мы не будем его проверять тут, тк  n_sem > 0 - он банально уйдет в новый кластер*
                     }
                     met[nb] = id_kl;// В любом случае присваиваем ему текущую метку кластера
                 }
