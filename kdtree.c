@@ -8,9 +8,9 @@
 // Функция создания новой точки
 Point create_point(double *crd, int razm) {
     Point tch;                         
-    tch.razmer = razm;// размерность передаем
+    tch.razmer = razm;// размерность передаем( 3д, 2д )
     tch.coords = (double*)malloc(razm * sizeof(double)); //массив под координаты
-    for (int i = 0; i < razm; i++) {//проход по всем осям пространства
+    for (int i = 0; i < razm; i++) {//проход по всем осям пространства( x- первое число, y - второе и тд)
         tch.coords[i] = crd[i];//Копируем значение координаты в массив
     }
     return tch;
@@ -28,7 +28,7 @@ KDNode* kd_create_node(Point tch, int os) {
     KDNode *uzel = (KDNode*)malloc(sizeof(KDNode)); //память под узел
     uzel->point.razmer = tch.razmer;// размерность копируем в узел
     uzel->point.coords = (double*)malloc(tch.razmer * sizeof(double)); // выделяем НОВУЮ память для копии
-    memcpy(uzel->point.coords, tch.coords, tch.razmer * sizeof(double)); // копируем данные в новую память
+    memcpy(uzel->point.coords, tch.coords, tch.razmer * sizeof(double)); // копируем данные в новую память - то есть уже прям в узел
     uzel->levo = NULL;        
     uzel->pravo = NULL;                 
     uzel->axis = os;                   
@@ -36,7 +36,7 @@ KDNode* kd_create_node(Point tch, int os) {
 }
 
 // Рекурсивная вставка точки
-KDNode* kd_insert(KDNode *koren, Point tch, int glub) { 
+KDNode* kd_insert(KDNode *koren, Point tch, int glub) { //корень - узел текущ, tch - наша точкаm 
     if (koren == NULL) { // Если дошли до пустого места 
         return kd_create_node(tch, glub % tch.razmer); // создаем новый узел
     }
@@ -73,14 +73,16 @@ KDNode* kd_find_nearest(KDNode *koren, Point cel, int glub, KDNode **luch, doubl
         *luch_d = r;//обновляем переменную с лучшим расстоянием
         *luch = koren;//запоминаем указатель на этот узел как лучший
     }
-    int os = koren->axis;//берем ось деления текущего узла
+    int os = koren->axis;//	Ось, по которой разделено пространство в текущем узле
     KDNode *vper, *vtor;//Указатели на "перспективную" и "вторую" ветки
 
     if (cel.coords[os] < koren->point.coords[os]) {//цель левее -> сначала идем влево
-        vper = koren->levo; vtor = koren->pravo; 
+        vper = koren->levo; 
+        vtor = koren->pravo; 
     } 
     else { //цель правее -> сначала идем вправо
-        vper = koren->pravo; vtor = koren->levo; 
+        vper = koren->pravo; 
+        vtor = koren->levo; 
     }
     kd_find_nearest(vper, cel, glub + 1, luch, luch_d); //Рекурсивно ищем в первой (ближней) ветке
     double os_r = fabs(cel.coords[os] - koren->point.coords[os]); //Считаем расстояние до разделяющей плоскости
